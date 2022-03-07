@@ -1,78 +1,51 @@
-# coding=utf-8
-from __future__ import absolute_import
-
-### (Don't forget to remove me)
-# This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
-# as well as the plugin mixins it's subclassing from. This is really just a basic skeleton to get you started,
-# defining your plugin as a template plugin, settings and asset plugin. Feel free to add or remove mixins
-# as necessary.
-#
-# Take a look at the documentation on what other plugin mixins are available.
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
 
 import octoprint.plugin
 
-class RelaytogglePlugin(octoprint.plugin.SettingsPlugin,
-    octoprint.plugin.AssetPlugin,
-    octoprint.plugin.TemplatePlugin
-):
+#import RPi.GPIO as GPIO
 
-    ##~~ SettingsPlugin mixin
+class RelaytogglePlugin(octoprint.plugin.StartupPlugin,
+                        octoprint.plugin.TemplatePlugin,
+                        octoprint.plugin.SettingsPlugin,
+                        octoprint.plugin.EventHandlerPlugin):
+    port = 17
+
+    def on_after_startup(self):
+        port = int(self._settings.get(["port"]))
+        self._logger.info("HOLY TINKLES Im starting******* on port: %d" % port)
+#        GPIO.setmode(GPIO.BCM)
+#        GPIO.setup(17, GPIO.OUT)
+        self._logger.info("setting up GPIO to be legit output")
 
     def get_settings_defaults(self):
-        return {
-            # put your plugin's default settings here
-        }
+        return dict(port=17)
 
-    ##~~ AssetPlugin mixin
+    def get_template_configs(self):
+        return [
+            dict(type="navbar", custom_bindings=False),
+            dict(type="settings", custom_bindings=False)
+        ]
 
-    def get_assets(self):
-        # Define your plugin's asset files to automatically include in the
-        # core UI here.
-        return {
-            "js": ["js/relaytoggle.js"],
-            "css": ["css/relaytoggle.css"],
-            "less": ["less/relaytoggle.less"]
-        }
-
-    ##~~ Softwareupdate hook
-
-    def get_update_information(self):
-        # Define the configuration for your plugin to use with the Software Update
-        # Plugin here. See https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
-        # for details.
-        return {
-            "relaytoggle": {
-                "displayName": "Relaytoggle Plugin",
-                "displayVersion": self._plugin_version,
-
-                # version check: github repository
-                "type": "github_release",
-                "user": "stolenricecakes",
-                "repo": "OctoPrint-Relaytoggle",
-                "current": self._plugin_version,
-
-                # update method: pip
-                "pip": "https://github.com/stolenricecakes/OctoPrint-Relaytoggle/archive/{target_version}.zip",
-            }
-        }
+    def on_event(self,event,payload):
+        if event == 'PrintStarted':
+#            GPIO.output(17, GPIO.HIGH)
+            self._logger.info("print started, lights on")
+        elif event == 'PrintFailed':
+#            GPIO.output(17, GPIO.LOW)
+            self._logger.info("print failed, lights off")
+        elif event == 'PrintDone':
+#            GPIO.output(17, GPIO.LOW)
+            self._logger.info("print done, lights off")
+        elif event == 'PrintCancelled':
+#            GPIO.output(17, GPIO.LOW)
+            self._logger.info("print cancelled. lights off")
 
 
-# If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
-# ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
-# can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Relaytoggle Plugin"
 
 
-# Set the Python version your plugin is compatible with below. Recommended is Python 3 only for all new plugins.
-# OctoPrint 1.4.0 - 1.7.x run under both Python 3 and the end-of-life Python 2.
-# OctoPrint 1.8.0 onwards only supports Python 3.
-__plugin_pythoncompat__ = ">=3,<4"  # Only Python 3
 
-def __plugin_load__():
-    global __plugin_implementation__
-    __plugin_implementation__ = RelaytogglePlugin()
+__plugin_name__ = "Relaytoggle"
+__plugin_pythoncompat__ = ">=2.7,<4"
+__plugin_implementation__ = RelaytogglePlugin()
 
-    global __plugin_hooks__
-    __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
-    }
