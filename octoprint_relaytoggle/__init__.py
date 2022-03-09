@@ -13,6 +13,7 @@ class RelaytogglePlugin(octoprint.plugin.StartupPlugin,
                         octoprint.plugin.SettingsPlugin,
                         octoprint.plugin.EventHandlerPlugin):
     port = 17
+    gpio_out = None
 
     def on_after_startup(self):
         port = int(self._settings.get(["port"]))
