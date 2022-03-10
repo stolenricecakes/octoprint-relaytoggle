@@ -13,7 +13,6 @@ class RelaytogglePlugin(octoprint.plugin.StartupPlugin,
                         octoprint.plugin.SettingsPlugin,
                         octoprint.plugin.EventHandlerPlugin):
     port = 17
-    gpio_out = None
 
     def on_after_startup(self):
         port = int(self._settings.get(["port"]))
@@ -29,19 +28,34 @@ class RelaytogglePlugin(octoprint.plugin.StartupPlugin,
             dict(type="settings", custom_bindings=False)
         ]
 
+    def gimme_the_port:
+        return GPIO("/dev/gpiochip0", port, "out"
+
     def on_event(self,event,payload):
         if event == 'PrintStarted':
+            self._logger.info("print started, trying to turn lights on")
+            gpio_out = gimme_the_port()
             gpio_out.write(True)
-            self._logger.info("print started, lights on")
+            gpio_out.close()
+            self._logger.info("print started, lights on now")
         elif event == 'PrintFailed':
+            self._logger.info("print failed, trying to turn lights off")
+            gpio_out = gimme_the_port()
             gpio_out.write(False)
-            self._logger.info("print failed, lights off")
+            gpio_out.close()
+            self._logger.info("print failed, lights off now")
         elif event == 'PrintDone':
+            self._logger.info("print done, trying to turn lights off")
+            gpio_out = gimme_the_port()
             gpio_out.write(False)
-            self._logger.info("print done, lights off")
+            gpio_out.close()
+            self._logger.info("print done, lights off now")
         elif event == 'PrintCancelled':
+            self._logger.info("print cancelled. trying to turn lights off")
+            gpio_out = gimme_the_port()
             gpio_out.write(False)
-            self._logger.info("print cancelled. lights off")
+            gpio_out.close()
+            self._logger.info("print cancelled. lights off now")
 
 
 __plugin_name__ = "Relaytoggle"
